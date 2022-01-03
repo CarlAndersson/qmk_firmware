@@ -4,6 +4,7 @@ void update_oneshot(
     oneshot_state *state,
     uint16_t mod,
     uint16_t trigger,
+    uint16_t lock,
     uint16_t keycode,
     keyrecord_t *record
 ) {
@@ -23,6 +24,22 @@ void update_oneshot(
                 break;
             case os_down_used:
                 // If we did use the mod while trigger was held, unregister it.
+                *state = os_up_unqueued;
+                unregister_code(mod);
+                break;
+            default:
+                break;
+            }
+        }
+    } else if (keycode == lock) {
+        if (record->event.pressed) {
+            switch (*state) {
+            case os_down_used:
+            case os_down_unused:
+            case os_up_queued:
+                *state = os_locked;
+                break;
+            case os_locked:
                 *state = os_up_unqueued;
                 unregister_code(mod);
                 break;

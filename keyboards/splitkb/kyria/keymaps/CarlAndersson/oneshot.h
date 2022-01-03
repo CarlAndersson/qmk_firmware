@@ -8,6 +8,7 @@ typedef enum {
     os_up_queued,
     os_down_unused,
     os_down_used,
+    os_locked,
 } oneshot_state;
 
 // Custom oneshot mod implementation that doesn't rely on timers. If a mod is
@@ -17,6 +18,7 @@ void update_oneshot(
     oneshot_state *state,
     uint16_t mod,
     uint16_t trigger,
+    uint16_t lock,
     uint16_t keycode,
     keyrecord_t *record
 );
