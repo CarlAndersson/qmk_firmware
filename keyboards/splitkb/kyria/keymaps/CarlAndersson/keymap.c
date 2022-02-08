@@ -1,16 +1,13 @@
 #include QMK_KEYBOARD_H
 
 #include "oneshot.h"
-#include "swapper.h"
 
 enum layers {
-    BSE = 0,
-    SYM,
-    NAV,
-    NUM,
-    MSE,
-    FNC,
-    TLE,
+    BASE = 0,
+    SYMBOLS,
+    EXTEND,
+    NUMLOCK,
+    META,
 };
 
 enum custom_keycodes {
@@ -19,179 +16,129 @@ enum custom_keycodes {
     OS_CTRL,
     OS_CMD,
     OS_HOLD,
-    SW_APP,  // Switch to next app         (cmd-tab)
 };
 
 
-// #define OS_SHFT OSM(MOD_LSFT)
-// #define OS_ALT OSM(MOD_LALT)
-// #define OS_CTRL OSM(MOD_LCTL)
-// #define OS_CMD OSM(MOD_LGUI)
-// #define OS_SHFT OSM(MOD_RSFT)
-// #define OS_ALT OSM(MOD_RALT)
-// #define OS_CTRL OSM(MOD_RCTL)
-// #define OS_CMD OSM(MOD_RGUI)
-
-#define SPC_LFT LALT(LCTL(KC_LEFT))
-#define SPC_RGT LALT(LCTL(KC_RIGHT))
-// #define SW_WIN LCMD(KC_TAB)
-#define SW_TAB LCTL(KC_TAB)
-#define MC_LNCH LGUI(KC_SPC)
-#define MC_NOTE LGUI(LALT(KC_SPC))
-#define MC_TERM LCTL(LALT(KC_SPC))
 #define MC_COPY LGUI(KC_C)
 #define MC_PSTE LGUI(KC_V)
 #define MC_CUT LGUI(KC_X)
 #define MC_UNDO LGUI(KC_Z)
+#define MC_CMNT LGUI(KC_SLSH)
+#define MC_MOUSEWIN LALT(LGUI(LCTL(KC_Z)))
+#define MC_KBRDWIN LALT(LGUI(LCTL(KC_X)))
 
-#define LA_NAV MO(NAV)
-#define LA_SYM MO(SYM)
-#define LA_NUM MO(NUM)
-// #define LA_MSE MO(MSE)
-#define LA_TLE MO(TLE)
-#define LA_FNC MO(FNC)
+#define SE_ARNG LALT(KC_LBRC)
+#define SE_ADIA LALT(KC_QUOT)
+#define SE_ODIA LALT(KC_SCLN)
+
+#define LA_EXTEND MO(EXTEND)
+#define LA_SYMBOLS MO(SYMBOLS)
+#define LA_NMLCK TG(NUMLOCK)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-/*          
- * Base Layer
+/*
+ * Base layer
  *
  * ,-----------------------------------------.                              ,-----------------------------------------.
- * | Esc  |   Q  |   W  |   F  |   P  |   G  |                              |   J  |   L  |   U  |   Y  | ?  ! |OSHold|
+ * |      |  Q   | W    | F    | P    | G    |                              |   J  |  L   |  U   |  Y   | -  _ |      |
  * |------+------+------+------+------+------|                              |------+------+------+------+------+------|
- * |BspDel|   A  |   R  |   S  |   T  |   D  |                              |   H  |   N  |   E  |   I  |   O  | Entr |
+ * |      |  A   | R    | S    | T    | D    |                              |   H  |  N   |  E   |  I   |  O   |      |
  * |------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+------|
- * | Tab  |   Z  |   X  |   C  |   V  |   B  | Lnch | Note |  | Term |      |   N  |   M  | ,  ; | .  : | '  " |      |
+ * |      |  Z   | X    | C    | V    | B    |      |      |  |      |      |   K  |  M   | ,  ; | .  : | '  / |      |
  * `--------------------+------+------+------+------+------|  |------+------+------+------+------+--------------------'
- *                      |      |      | Nav  | Shft | Fnc  |  | Tile | Spce | Syms |      |      |
+ *                      |      |      | Ext  | Shft | Bcsp |  | Entr | Spce | Sym  |      |      |
  *                      `----------------------------------'  `----------------------------------'
  */
-    [BSE] = LAYOUT(
-      KC_ESC,  KC_Q,   KC_W,   KC_F,   KC_P,   KC_G,                                             KC_J,    KC_L,    KC_U,    KC_Y,    KC_QUES, OS_HOLD,
-      KC_BSPC, KC_A,   KC_R,   KC_S,   KC_T,   KC_D,                                             KC_H,    KC_N,    KC_E,    KC_I,    KC_O,    KC_ENT,
-      KC_TAB,  KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,    MC_LNCH, MC_NOTE,      MC_TERM, _______, KC_K,    KC_M,    KC_COMM, KC_DOT,  KC_QUOT, _______,
-                            _______, _______,  LA_NAV,  KC_LSFT, LA_FNC,       LA_TLE,  KC_SPC,  LA_SYM,  _______, _______
+    [BASE] = LAYOUT(
+      _______, KC_Q,   KC_W,   KC_F,   KC_P,   KC_G,                                               KC_J,    KC_L,    KC_U,    KC_Y,    KC_MINS, _______,
+      _______, KC_A,   KC_R,   KC_S,   KC_T,   KC_D,                                               KC_H,    KC_N,    KC_E,    KC_I,    KC_O,    _______,
+      _______, KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,      _______, _______,      _______, _______, KC_K,    KC_M,    KC_COMM, KC_DOT,  KC_QUOT, _______,
+                            _______, _______,  LA_EXTEND, KC_LSFT, KC_BSPC,     KC_ENTER, KC_SPC,  LA_SYMBOLS,  _______, _______
     ),
 /*
  * Symbols layer
  *
  * ,-----------------------------------------.                              ,-----------------------------------------.
- * |      |   <  |   {  |   [  |   (  |  $   |                              |      |  )   |  ]   |  }   |  >   |      |
+ * |      |   ?  | 7    | 8    |  9   |      |                              |  J   |  *   |  /   |  +   |  -   |      |
  * |------+------+------+------+------+------|                              |------+------+------+------+------+------|
- * |      |   -  |   +  |   =  |   _  |  @   |                              |   ~  | Cmd  | Alt  | Ctrl | Shft |      |
+ * |      |   0  | 4    | 5    |  6   |      |                              |  <   |  (   |  [   |  {   |  =   |      |
  * |------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+------|
- * |      |   ^  |   &  |   *  |   /  |  %   |      |      |  |      |      |      |  \   |  |   |  #   |  `   |      |
+ * |      |   e  | 1    | 2    |  3   |      |      |      |  |      |      |  >   |  )   |  ]   |  }   | "    |      |
  * `--------------------+------+------+------+------+------|  |------+------+------+------+------+--------------------'
- *                      |      |      | Num  |      |      |  |      |      | ---- |      |      |
- *                      `----------------------------------'  `----------------------------------'
- */
-    [SYM] = LAYOUT(
-      _______, KC_LT,   KC_LCBR, KC_LBRC, KC_LPRN, KC_DLR,                                              _______, KC_RPRN, KC_RBRC, KC_RCBR, KC_GT,   _______,
-      _______, KC_MINS, KC_PLUS, KC_EQL,  KC_UNDS, KC_AT,                                               KC_TILD, OS_CMD,  OS_ALT,  OS_CTRL, OS_SHFT, _______,
-      _______, KC_CIRC, KC_AMPR, KC_ASTR, KC_SLSH, KC_PERC, _______, _______,         _______, _______, _______, KC_BSLS, KC_PIPE, KC_HASH, KC_GRV,  _______,
-                                 _______, _______, LA_NUM,  _______, _______,         _______, _______, _______, _______, _______
-    ),
-/*
- * Navigation layer
- *
- * ,-----------------------------------------.                              ,-----------------------------------------.
- * |      |      |      |      |      |      |                              |      | Home |  ↑   | End  | PgUp |      |
- * |------+------+------+------+------+------|                              |------+------+------+------+------+------|
- * |      | Shft | Ctrl | Alt  | Cmd  |      |                              |      |   ←  | NoOp |  →   | PgDn |      |
- * |------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+------|
- * |      | Undo | Cut  | Copy | Pste |      |      |      |  |      |      |      | Spc ←|  ↓   | Spc →|Sw Win|      |
- * `--------------------+------+------+------+------+------|  |------+------+------+------+------+--------------------'
- *                      |      |      | ---- |      |      |  |      |      | Num  |      |      |
+ *                      |      |      | Sym2 | Spce |      |  |      | Spce | ---- |      |      |
  *                      `----------------------------------'  `----------------------------------'
  */
 
-    [NAV] = LAYOUT(
-      _______, _______, _______, _______, _______, _______,                                         _______, KC_HOME, KC_UP,   KC_END,  KC_PGUP, _______,
-      _______, OS_SHFT, OS_CTRL, OS_ALT,  OS_CMD,  _______,                                         _______, KC_LEFT, KC_NO,   KC_RGHT, KC_PGDN, _______,
-      _______, MC_UNDO, MC_CUT,  MC_COPY, MC_PSTE, _______, _______, _______,     _______, _______, _______, SPC_LFT, KC_DOWN, SPC_RGT, SW_APP,  _______,
-                                 _______, _______, _______, _______, _______,     _______, _______, LA_NUM,  _______, _______
+    [SYMBOLS] = LAYOUT(
+      _______, KC_QUES, KC_7,    KC_8,    KC_9,    KC_NO,                                                KC_J,    KC_ASTR, KC_SLSH, KC_PLUS, KC_MINS, _______,
+      _______, KC_0,    KC_4,    KC_5,    KC_6,    KC_NO,                                                KC_LABK, KC_LPRN, KC_LBRC, KC_LCBR, KC_EQL,  _______,
+      _______, KC_E,    KC_1,    KC_2,    KC_3,    KC_NO,    _______, _______,         _______, _______, KC_RABK, KC_RPRN, KC_RBRC, KC_RCBR, KC_DQUO,  _______,
+                                 _______, _______, _______,  KC_SPC,  _______,         _______, KC_SPC,  _______, _______, _______
+    ),
+/*
+ * Extend layer
+ *
+ * ,-----------------------------------------.                              ,-----------------------------------------.
+ * |      | Esc  | Spce | Entr | Bcsp |NumLck|                              |      | Del  |  ↑   |   å  |  ä   |      |
+ * |------+------+------+------+------+------|                              |------+------+------+------+------+------|
+ * |      | Shft | Ctrl | Alt  | Cmd  |MseWin|                              |KeyWin|   ←  |OsHold|  →   |  ö   |      |
+ * |------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+------|
+ * |      | Undo | Cut  | Copy | Pste |Coment|      |      |  |      |      |      | Tab  |  ↓   |      |  \   |      |
+ * `--------------------+------+------+------+------+------|  |------+------+------+------+------+--------------------'
+ *                      |      |      | ---- |      |      |  |      | Spce | Sym2 |      |      |
+ *                      `----------------------------------'  `----------------------------------'
+ */
+
+    [EXTEND] = LAYOUT(
+      _______, KC_ESC,  KC_SPC,  KC_ENT,  KC_BSPC, LA_NMLCK,                                        KC_NO,   KC_DEL,  KC_UP,   SE_ARNG, SE_ADIA, _______,
+      _______, OS_SHFT, OS_CTRL, OS_ALT,  OS_CMD,  MC_MOUSEWIN,                                  MC_KBRDWIN, KC_LEFT, OS_HOLD, KC_RGHT, SE_ODIA, _______,
+      _______, MC_UNDO, MC_CUT,  MC_COPY, MC_PSTE, MC_CMNT, _______, _______,     _______, _______, KC_NO,   KC_TAB,  KC_DOWN, KC_NO,   KC_BSLS, _______,
+                                 _______, _______, _______, _______, _______,     _______, KC_SPC,  _______,  _______, _______
     ),
 
 /*
- * Numbers layer
+ * Meta layer
  *
  * ,-----------------------------------------.                              ,-----------------------------------------.
- * |      |      |      |      |      |      |                              |   j  |      |      |      |      |      |
+ * |      |  !   |      |      |  %   |      |                              |      |      | PgUp |      |  ~   |      |
  * |------+------+------+------+------+------|                              |------+------+------+------+------+------|
- * |      |  1   |  2   |  3   |  4   |  5   |                              |   6  |   7  |   8  |   9  |   0  |      |
+ * |      |  @   | $    |  &   |  ^   |  |   |                              |      | Home |      |  End |      |      |
  * |------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+------|
- * |      |      |  -   |  e   |  +   |      |      |      |  |      |      |      |      |   ,  |   .  |      |      |
+ * |      |      |      |      |  #   |      |      |      |  |      |      |      |Dedet |PgDown| Indnt|  `   |      |
  * `--------------------+------+------+------+------+------|  |------+------+------+------+------+--------------------'
  *                      |      |      | ---- |      |      |  |      |      | ---- |      |      |
  *                      `----------------------------------'  `----------------------------------'
  */
 
-    [NUM] = LAYOUT(
-      _______, _______, _______, _______, _______, _______,                                         KC_J,    _______, _______, _______, _______, _______,
-      _______, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                                            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    _______,
-      _______, _______, KC_MINS, KC_E,    KC_PLUS, _______, _______, _______,     _______, _______, _______, _______, KC_COMM, KC_DOT,  _______, _______,
+    [META] = LAYOUT(
+      _______, KC_EXLM, KC_NO,   KC_NO,   KC_PERC, KC_NO,                                           KC_NO,   KC_NO,   KC_PGUP, KC_NO,   KC_TILD, _______,
+      _______, KC_AT,   KC_DLR,  KC_AMPR, KC_CIRC, KC_PIPE,                                         KC_NO,   KC_HOME, KC_NO,   KC_END,  KC_NO,   _______,
+      _______, KC_NO,   KC_NO,   KC_NO,   KC_HASH, _______, _______, _______,     _______, _______, _______,G(KC_LBRC),KC_PGDN,G(KC_RBRC),KC_GRV,  _______,
                                  _______, _______, _______, _______, _______,     _______, _______, _______, _______, _______
     ),
 
 
 /*
- * Mouse layer
+ * NumLock layer
  *
  * ,-----------------------------------------.                              ,-----------------------------------------.
- * |      |      | Mb 3 | Mb 2 | Mb 1 |      |                              |      |Scr ← |  ↑   |Scr → |Scr ↑ |      |
+ * |      | Exit |  7   |  8   |  9   |      |                              |  F1  |  F2  |  F3  |  F4  |  F5  |      |
  * |------+------+------+------+------+------|                              |------+------+------+------+------+------|
- * |      | Shft | Ctrl | Alt  | Cmd  |      |                              |      |   ←  | Mb 1 |  →   |Scr ↓ |      |
+ * |      |  0   |  4   |  5   |  6   |      |                              |  F6  |  F7  |  F8  |  F9  |  F10 |      |
  * |------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+------|
- * |      |      |Spd 0 |Spd 1 |Spd 2 |      |      |      |  |      |      |      |      |  ↓   |      |      |      |
+ * |      |  e   |  1   |  2   |  3   |      |      |      |  |      |      |  F11 |  F12 |  F13 |  F14 |  F15 |      |
  * `--------------------+------+------+------+------+------|  |------+------+------+------+------+--------------------'
- *                      |      |      |      |      |      |  | ---- |      |      |      |      |
+ *                      |      |      |  -   |  +   |      |  |      |      |      |      |      |
  *                      `----------------------------------'  `----------------------------------'
  */
 
-    // [MSE] = LAYOUT(
-    //   _______, _______, KC_BTN1, KC_BTN2, KC_BTN3, _______,                                         _______, KC_WH_L, KC_MS_U, KC_WH_R, KC_WH_U, _______,
-    //   _______, OS_SHFT, OS_CTRL, OS_ALT,  OS_CMD,  _______,                                         _______, KC_MS_L, KC_BTN1, KC_MS_R, KC_WH_D, _______,
-    //   _______, _______, KC_ACL0, KC_ACL1, KC_ACL2, _______, _______, _______,     _______, _______, _______, _______, KC_MS_D, _______, _______, _______,
-    //                              _______, _______, _______, _______, _______,     _______, _______, _______, _______, _______
-    // ),
+   [NUMLOCK] = LAYOUT(
+      _______, LA_NMLCK,KC_7,    KC_8,    KC_9,    _______,                                         KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   _______,
+      _______, KC_0,    KC_4,    KC_5,    KC_6,    _______,                                         KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  _______,
+      _______, KC_E,    KC_1,    KC_2,    KC_3,    _______, _______, _______,     _______, _______, KC_F11,  KC_F12,  KC_F13,  KC_F14,  KC_F15,  _______,
+                                 _______, _______, KC_MINS, KC_PLUS, _______,     _______, _______, _______, _______, _______
+    ),
 
-/*
- * Fn and media keys
- *
- * ,-----------------------------------------.                              ,-----------------------------------------.
- * |      |  F1  |  F2  |  F3  |  F4  |  F5  |                              |      | Prev | Puse | Next |      |      |
- * |------+------+------+------+------+------|                              |------+------+------+------+------+------|
- * |      |  F6  |  F7  |  F8  |  F9  |  F10 |                              |      |VolDwn| Mute |VolUp |      |      |
- * |------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+------|
- * |      |  F11 |  F12 |  F13 |  F14 |  F15 |      |      |  |      |      |      |      |      |      |      |      |
- * `--------------------+------+------+------+------+------|  |------+------+------+------+------+--------------------'
- *                      |      |      |      |      |      |  | ---- |      |      |      |      |
- *                      `----------------------------------'  `----------------------------------'
- */ 
-    [FNC] = LAYOUT(
-      _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                                           _______, KC_MPRV, KC_MPLY, KC_MNXT, _______, _______,
-      _______, KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,                                          _______, KC_VOLD, KC_MUTE, KC_VOLU, _______, _______,
-      _______, KC_F11,  KC_F12,  KC_F13,  KC_F14,  KC_F15,  _______, _______,     _______, _______, _______, _______, _______, _______, _______, _______,
-                                 _______, _______, _______, _______, _______,     _______, _______, _______, _______, _______
-    ),
- /*
- * Window tiler
- *
- * ,-------------------------------------------------------------------------------------------.                              ,---------------------------------------------------------------------------------------------.
- * |      |                |Upper left quart|  Upper half    |Upper righ quart|                |                              |                |   Prev Space   |  Next Space    |                |                |        |
- * |------+----------------+----------------+----------------+----------------+----------------|                              |----------------+----------------+----------------+----------------+----------------+--------|
- * |      |  Prev monitor  | Left half      |   Maximize     |  Right half    |  Next monitor  |                              |                |   Prev App     |  Next App      |  Prev Win      |  Next Win      |        |
- * |------+----------------+----------------+----------------+----------------+----------------+-------------.  ,-------------+----------------+----------------+----------------+----------------+----------------+--------|
- * |      |                |Lower left quart|   Lower half   |Lower righ quart|                |      |      |  |      |      |                |                |                |                |                |        |
- * `------+----------------+----------------+----------------+----------------+----------------+------+------|  |------+------+----------------+----------------------------------------------------------------------------'
- *                                          |                |                |                |      | ---- |  |      |      |                |                |                |
- *                                          `----------------------------------------------------------------'  `----------------------------------------------------------------'
- */
-    [TLE] = LAYOUT(
-      _______, _______,      LSFT(LALT(KC_F18)), LSFT(LCTL(KC_F18)), LSFT(LCMD(KC_F18)), _______,                                              _______,       _______,           _______,            _______,           _______,      _______,
-      _______, LSFT(KC_F18), LALT(KC_F18),       KC_F18,             LCTL(KC_F18),       LCMD(KC_F18),                                         _______,       _______,           _______,            _______,           _______,      _______,
-      _______, _______,      LCMD(LALT(KC_F18)), LCMD(LCTL(KC_F18)), LCTL(LALT(KC_F18)), _______,      _______, _______,     _______, _______, _______,       _______,           _______,            _______,           _______,      _______,
-                                                 _______,            _______,            _______,      _______, _______,     _______, _______, _______, _______, _______
-    ),
 // /*
 //  * Layer template
 //  *
@@ -213,23 +160,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //     ),
 };
 
-// layer_state_t layer_state_set_user(layer_state_t state) {
-//     state = update_tri_layer_state(state, SYM, NAV, FNC);
-//     state = update_tri_layer_state(state, NUM, MSE, TLE);
-//     return state;
-// }
-
+layer_state_t layer_state_set_user(layer_state_t state) {
+    state = update_tri_layer_state(state, SYMBOLS, EXTEND, META);
+    return state;
+}
 
 const key_override_t shift_comma_2_semicolon_override = ko_make_basic(MOD_MASK_SHIFT, KC_COMM, KC_SCLN);
 const key_override_t shift_dot_2_colon_override = ko_make_basic(MOD_MASK_SHIFT, KC_DOT, KC_COLN);
-const key_override_t shift_question_2_exclamation_override = ko_make_basic(MOD_MASK_SHIFT, KC_QUES, KC_EXLM);
-const key_override_t shift_backspace_2_del = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, KC_DEL);
+const key_override_t shift_quote_2_slash_override = ko_make_basic(MOD_MASK_SHIFT, KC_QUOT, KC_SLSH);
 
 const key_override_t **key_overrides = (const key_override_t *[]){
     &shift_comma_2_semicolon_override,
     &shift_dot_2_colon_override,
-    &shift_question_2_exclamation_override,
-    &shift_backspace_2_del,
+    &shift_quote_2_slash_override,
     NULL // Null terminate the array of overrides!
 };
 
@@ -238,29 +181,18 @@ bool oneshot_hold = false;
 
 bool is_oneshot_cancel_key(uint16_t keycode) {
     switch (keycode) {
-    case LA_SYM:
-    case LA_NAV:
-    // case LA_NUM:
-    // case LA_MSE:
+    case LA_EXTEND:
         return true;
-    // case OS_HOLD:
-        // return locked;
     default:
         return false;
     }
 }
 
 bool is_oneshot_ignored_key(uint16_t keycode) {
-    // if (locked) {
-    //     return true;
-    // }
 
     switch (keycode) {
-    case LA_SYM:
-    case LA_NAV:
-    case LA_NUM:
-    // case LA_MSE:
-    case KC_LSFT:
+    case LA_SYMBOLS:
+    case LA_EXTEND:
     case OS_SHFT:
     case OS_ALT:
     case OS_CTRL:
@@ -270,9 +202,6 @@ bool is_oneshot_ignored_key(uint16_t keycode) {
         return false;
     }
 }
-
-// bool sw_win_active = false;
-bool sw_app_active = false;
 
 oneshot_state os_ctrl_state = os_up_unqueued;
 oneshot_state os_shft_state = os_up_unqueued;
@@ -286,11 +215,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         oneshot_hold = !oneshot_hold;
         break;
     }
-
-    update_swapper(
-        &sw_app_active, KC_LGUI, KC_TAB, SW_APP,
-        keycode, record
-    );
 
     update_oneshot(
         &os_shft_state, KC_LSFT, OS_SHFT, OS_HOLD,

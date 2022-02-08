@@ -5,4 +5,3 @@ KEY_OVERRIDE_ENABLE = yes # Enable key overrides from JonasGessner (PR #11422)
 MOUSEKEY_ENABLE = no     # Enable mouse keys
 
 SRC += oneshot.c
-SRC += swapper.c
